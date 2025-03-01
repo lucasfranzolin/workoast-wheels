@@ -1,9 +1,10 @@
-import { Pagination, trpc } from "@/trpc.ts";
-import { useFormContext } from "react-hook-form";
 import { combineDateTime, FormValues } from "@/components/search/form.tsx";
 import { Button } from "@/components/ui/button.tsx";
+import { Pagination, trpc } from "@/trpc.ts";
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useFormContext } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { VehicleCard } from "./VehicleCard";
 
 function PaginationButtons({ data }: { data: Pagination }) {
   const form = useFormContext<FormValues>();
@@ -30,6 +31,8 @@ function PaginationButtons({ data }: { data: Pagination }) {
 }
 
 export function VehicleList() {
+  const navigate = useNavigate();
+
   const form = useFormContext<FormValues>();
   const startDate = form.watch("startDate");
   const startTime = form.watch("startTime");
@@ -78,31 +81,27 @@ export function VehicleList() {
 
   return (
     <div>
-      <ul className="space-y-4">
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
         {searchResponse.vehicles.map((vehicle) => {
           const bookNowParams = new URLSearchParams({
             id: vehicle.id,
             start: startDateTime.toISOString(),
             end: endDateTime.toISOString(),
           });
-
           return (
-            <div key={vehicle.id} className="flex gap-6 items-center">
-              {vehicle.make} {vehicle.model}
-              <Button asChild className="mt-2 w-full sm:w-auto">
-                <Link
-                  to={{
-                    pathname: "review",
-                    search: bookNowParams.toString(),
-                  }}
-                >
-                  Book now
-                </Link>
-              </Button>
-            </div>
+            <VehicleCard
+              key={vehicle.id}
+              {...vehicle}
+              onReserve={() => {
+                navigate({
+                  pathname: "review",
+                  search: bookNowParams.toString(),
+                });
+              }}
+            />
           );
         })}
-      </ul>
+      </div>
       <PaginationButtons data={searchResponse.pagination} />
     </div>
   );
