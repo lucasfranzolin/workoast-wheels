@@ -47,3 +47,7 @@
 # References
 
 - https://shadcnui-expansions.typeart.cc/
+
+# Open improvements (not in scope)
+
+- Enhance Time range filters to prevent users from selecting invalid date-time ranges before sending an invalid search, currently that is only being dealt with by the server but we can prevent this from happening if the frontend would have that rule
