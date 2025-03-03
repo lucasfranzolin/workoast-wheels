@@ -1,17 +1,17 @@
 import { ErrorFallback } from "@/components/ErrorFallback";
+import { AdditionalFilters } from "@/components/search/AdditionalFilters.tsx";
+import { formSchema } from "@/components/search/form.tsx";
+import { TimeRangeFilters } from "@/components/search/TimeRangeFilters.tsx";
+import { VehicleList } from "@/components/search/VehicleList.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Form } from "@/components/ui/form.tsx";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useZodForm } from "@/hooks/use-zod-form";
 import { roundToNearest30Minutes } from "@/lib/times.ts";
 import { addDays, addHours, format } from "date-fns";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useForm } from "react-hook-form";
-import { FormValues } from "@/components/search/form.tsx";
-import { AdditionalFilters } from "@/components/search/AdditionalFilters.tsx";
-import { VehicleList } from "@/components/search/VehicleList.tsx";
-import { TimeRangeFilters } from "@/components/search/TimeRangeFilters.tsx";
 
 export function SearchPage() {
   const [initialStartDateAndTime] = useState(() =>
@@ -22,7 +22,8 @@ export function SearchPage() {
     addDays(initialStartDateAndTime, 1),
   );
 
-  const form = useForm<FormValues>({
+  const form = useZodForm({
+    schema: formSchema,
     defaultValues: {
       startDate: initialStartDateAndTime,
       startTime: format(initialStartDateAndTime, "HH:mm"),
