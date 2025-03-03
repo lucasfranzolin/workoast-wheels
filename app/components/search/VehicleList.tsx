@@ -1,7 +1,8 @@
 import { combineDateTime, FormValues } from "@/components/search/form.tsx";
 import { Button } from "@/components/ui/button.tsx";
+import { useDebounce } from "@/hooks/use-debounce";
 import { Pagination, trpc } from "@/trpc.ts";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useFormContext } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { VehicleCard } from "./VehicleCard";
@@ -43,7 +44,6 @@ export function VehicleList() {
   const make = form.watch("make");
   const price = form.watch("price");
   const page = form.watch("page");
-
   const startDateTime = useMemo(
     () => combineDateTime(startDate, startTime),
     [startDate, startTime],
@@ -53,21 +53,47 @@ export function VehicleList() {
     [endDate, endTime],
   );
 
+  const _priceMin = useDebounce(price[0], 300);
+  const _priceMax = useDebounce(price[1], 300);
+  const _classification = useDebounce(classification, 300);
+  const _make = useDebounce(make, 300);
+
   const [searchResponse] = trpc.vehicles.search.useSuspenseQuery(
     {
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
       page: Number(page),
       passengerCount: Number(minPassengers),
-      classification: classification,
-      make: make,
-      priceMin: price[0],
-      priceMax: price[1],
+      classification: _classification,
+      make: _make,
+      priceMin: _priceMin,
+      priceMax: _priceMax,
     },
-    {
-      keepPreviousData: true,
-    },
+    { keepPreviousData: true },
   );
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+    form.setValue("page", 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    startDate,
+    startTime,
+    endDate,
+    endTime,
+    _priceMin,
+    _priceMax,
+    _classification,
+    _make,
+  ]);
 
   if (searchResponse.vehicles.length === 0) {
     return (
